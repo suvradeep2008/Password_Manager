@@ -1,8 +1,41 @@
 import time
+import os
+
+filename = "vault.txt"
 password_1 = None
 username_1 = None
 attempts = 3
 vault = {}
+
+# MASTER ACCOUNT LOAD FUNCTION
+
+
+def load_master_account():
+    if os.path.exists("master.txt"):
+        with open("master.txt", "r") as file:
+            line = file.read().strip()
+            if line:
+                return line.split(":", 1)
+    return None, None
+
+
+# FILE LOADING FUNCTION
+
+
+def load_data():
+    if os.path.exists(filename):
+        with open(filename, "r") as file:
+            for line in file:
+                line = line.strip()
+                if line:
+                    service_name, user_password = line.split(":", 1)
+                    vault[service_name] = user_password
+
+
+load_data()
+
+# LOAD MASTER ACCOUNT
+username_1, password_1 = load_master_account()
 
 # SIGN UP FUNTION
 
@@ -13,6 +46,8 @@ def sign_up():
     password_2 = input("Confirm your password: ")
 
     if password_1 == password_2:
+        with open("master.txt", "w") as file:
+            file.write(f"{username_1}:{password_1}")
         print("\nSign up successful!")
         return username_1, password_1
     else:
@@ -48,6 +83,7 @@ def database():
             service_name = input("Enter service name: ").strip().lower()
             user_password = input("Enter password: ")
             vault[service_name] = user_password
+            save_data()
             print(
                 f"Credentials for {service_name.title()} added successfully.")
             continue
@@ -66,6 +102,7 @@ def database():
                 "Enter service name you want to delete: ").strip().lower()
             if service_to_delete in vault:
                 del vault[service_to_delete]
+                save_data()
                 print(
                     f"Credentials for {service_to_delete.title()} deleted successfully.")
             else:
@@ -79,10 +116,16 @@ def database():
         else:
             print("\nInvalid choice. Please try again.")
 
+# FILE SAVING FUNCTION
+
+
+def save_data():
+    with open(filename, "w") as file:
+        for service_name, user_password in vault.items():
+            file.write(f"{service_name}:{user_password}\n")
+
 
 # MENU BLOCK
-
-
 while True:
     print("\nWelcome to Secure Vault")
     print("---Menu---")
@@ -93,7 +136,11 @@ while True:
     choice = input("\nEnter your choice: ")
 
     if choice == "1":
-        username_1, password_1 = sign_up()
+        if username_1 and password_1:
+            print("\nAn account already exists. Please sign in instead!\n")
+            continue
+        else:
+            username_1, password_1 = sign_up()
 
     elif choice == "2":
         if password_1 is None or username_1 is None:
