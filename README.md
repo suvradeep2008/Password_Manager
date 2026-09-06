@@ -1,4 +1,4 @@
-# personal_projects
+# Password_Manager
 Password Manager
 CLI-based interface for managing passwords
 
